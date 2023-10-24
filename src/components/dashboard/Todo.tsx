@@ -17,12 +17,27 @@ const Todo = ({
 }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [isDeleting, setDelete] = useState(false);
+  const [isCalWindowClosed, setCalWindowClosed] = useState(false);
   const handleShow = () => {
     setShowOptions(prev => !prev);
   }
   const handleDelete = () => {
     setDelete(true);
     removeTodo(todo.id);
+  }
+  const handleAddToCal = () => {
+    const date = new Date();
+    const yr = date.getFullYear();
+
+    const myWin = window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${todo.task}&dates=${yr}-${date.getMonth()+1}-${date.getDate()}`, '', 'toolbar=yes,scrollbars=yes,resizable=yes,top=500,left=500,width=400,height=400') as Window;
+
+    const interval = setInterval(() => {
+      if (myWin.closed) {
+        setCalWindowClosed(true)
+        clearInterval(interval);
+      }
+    }, 1000)
+    
   }
 
   return (
@@ -44,12 +59,6 @@ const Todo = ({
           </label>
         </div>
         <div>
-          {/* <MdClose
-            onClick={() => {
-              removeTodo(todo.id);
-            }}
-            className='cursor-pointer text-red-500 hover:text-orange-500 duration-300 text-3xl'
-          /> */}
           <FaAngleRight className={classNames('cursor-pointer text-orange-300 hover:text-orange-500 duration-300 text-xl', {'rotate-90': showOptions})} onClick={handleShow} />
         </div>
       </div>
@@ -57,12 +66,12 @@ const Todo = ({
         showOptions && <div className='mt-3 bg-slate-100'>
           <div className='ml-12'>
             <div className='flex items-center space-x-4'>
-              <div className={classNames('flex items-center space-x-2 bg-slate-300 px-2 py-1 group hover:bg-orange-500 duration-500', {'cursor-pointer': !isDeleting, 'cursor-not-allowed': isDeleting})}>
-                <span className='group-hover:text-white duration-500'>Add to calendar</span>
+              <div className={classNames('flex items-center space-x-2 bg-slate-300 px-2 py-1 group', {'cursor-default hover:bg-orange-500 duration-500': !isDeleting && !isCalWindowClosed, 'cursor-not-allowed': isDeleting || isCalWindowClosed})}>
+                <span className={classNames({'group-hover:text-white duration-500': !isDeleting && !isCalWindowClosed})} onClick={!isCalWindowClosed?handleAddToCal:() => {}}>{!isCalWindowClosed?'Add to Google calendar':'Added to calender'}</span>
                 <FaRegCalendarAlt className='text-2xl text-orange-400 group-hover:text-orange-500 duration-500' />
               </div>
               <div 
-                className={classNames('flex items-center space-x-2 group px-2 py-1 bg-slate-300 hover:bg-orange-500 duration-500',{'cursor-pointer': !isDeleting, 'cursor-not-allowed': isDeleting})}
+                className={classNames('flex items-center space-x-2 group px-2 py-1 bg-slate-300 hover:bg-orange-500 duration-500',{'cursor-default': !isDeleting, 'cursor-not-allowed': isDeleting})}
                 onClick={!isDeleting?handleDelete:() => {}}
               >
                 {!isDeleting?<><span className='group-hover:text-white duration-500'>Delete Task</span>
